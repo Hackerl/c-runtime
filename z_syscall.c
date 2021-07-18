@@ -49,11 +49,11 @@ DEFINE_SYSCALL3(write, ssize_t, int, fd, const void *, buf, size_t, count)
 DEFINE_SYSCALL2(munmap, int, void *, addr, size_t, length)
 DEFINE_SYSCALL3(mprotect, int, void *, addr, size_t, length, int, prot)
 
-int z_open(const char *pathname, int flags) {
+int z_open(const char *pathname, int flags, mode_t mode) {
 #ifdef __aarch64__
-    return (int)SYSCALL(openat, AT_FDCWD, pathname, flags);
+    return (int)SYSCALL(openat, AT_FDCWD, pathname, flags, mode);
 #else
-    return (int)SYSCALL(open, pathname, flags);
+    return (int)SYSCALL(open, pathname, flags, mode);
 #endif
 }
 

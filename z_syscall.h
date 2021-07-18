@@ -11,7 +11,7 @@ int *z_errno_location();
 
 void z_exit(int status);
 
-int z_open(const char *pathname, int flags);
+int z_open(const char *pathname, int flags, mode_t mode);
 int z_close(int fd);
 int z_stat(const char *pathname, struct stat *buf);
 int z_lseek(int fd, off_t offset, int whence);
