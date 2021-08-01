@@ -41,7 +41,6 @@ ret z_##name(t1 a1, t2 a2, t3 a3) {                                         \
 DEFINE_SYSCALL1(exit, void, int, status)
 
 DEFINE_SYSCALL1(close, int, int, fd)
-DEFINE_SYSCALL2(stat, int, const char *, pathname, struct stat *, buf)
 DEFINE_SYSCALL3(lseek, int, int, fd, off_t, offset, int, whence)
 DEFINE_SYSCALL3(read, ssize_t, int, fd, void *, buf, size_t, count)
 DEFINE_SYSCALL3(write, ssize_t, int, fd, const void *, buf, size_t, count)
@@ -54,6 +53,14 @@ int z_open(const char *pathname, int flags, mode_t mode) {
     return (int)SYSCALL(openat, AT_FDCWD, pathname, flags, mode);
 #else
     return (int)SYSCALL(open, pathname, flags, mode);
+#endif
+}
+
+int z_stat(const char *pathname, struct stat *buf) {
+#ifdef __aarch64__
+    return (int)SYSCALL(newfstatat, AT_FDCWD, pathname, buf, 0);
+#else
+    return (int)SYSCALL(stat, pathname, buf);
 #endif
 }
 

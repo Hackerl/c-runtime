@@ -1,8 +1,11 @@
 #include "z_memory.h"
 #include "z_syscall.h"
 #include "z_std.h"
-#include <sys/user.h>
 #include <sys/mman.h>
+
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 0x1000
+#endif
 
 #define CRT_SIZE_USER(ptr)      (*(unsigned long *)((unsigned long)(ptr) - 2 * sizeof(unsigned long)))
 #define CRT_SIZE_ALLOC(ptr)     (*(unsigned long *)((unsigned long)(ptr) - 1 * sizeof(unsigned long)))
