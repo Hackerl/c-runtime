@@ -57,7 +57,9 @@ int z_open(const char *pathname, int flags, mode_t mode) {
 }
 
 int z_stat(const char *pathname, struct stat *buf) {
-#ifdef __aarch64__
+#if (__i386__ || __arm__) && stat == stat64
+    return (int)SYSCALL(stat64, pathname, buf);
+#elif __aarch64__
     return (int)SYSCALL(newfstatat, AT_FDCWD, pathname, buf, 0);
 #else
     return (int)SYSCALL(stat, pathname, buf);
