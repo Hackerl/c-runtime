@@ -65,9 +65,7 @@ int z_stat(const char *pathname, struct stat *buf) {
 }
 
 void *z_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
-#ifdef __i386__
-    /* i386 has old_mmap and mmap2, old_map is a legacy single arg
-     * function, use mmap2 but it needs offset in page units. */
+#if __i386__ || __arm__
     offset = (unsigned long long)offset >> 12;
     return (void *)SYSCALL(mmap2, addr, length, prot, flags, fd, offset);
 #else
