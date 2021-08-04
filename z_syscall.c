@@ -56,15 +56,20 @@ int z_open(const char *pathname, int flags, mode_t mode) {
 #endif
 }
 
-int z_stat(const char *pathname, struct stat *buf) {
-#if (__i386__ || __arm__) && stat == stat64
+#if __i386__ || __arm__
+int z_stat64(const char *pathname, struct stat64 *buf) {
     return (int)SYSCALL(stat64, pathname, buf);
-#elif __aarch64__
+}
+
+#elif __x86_64__ || __aarch64__
+int z_stat(const char *pathname, struct stat *buf) {
+#ifdef __aarch64__
     return (int)SYSCALL(newfstatat, AT_FDCWD, pathname, buf, 0);
 #else
     return (int)SYSCALL(stat, pathname, buf);
 #endif
 }
+#endif
 
 void *z_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
 #if __i386__ || __arm__
