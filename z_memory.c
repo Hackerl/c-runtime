@@ -7,8 +7,9 @@
 #define PAGE_SIZE 0x1000
 #endif
 
-#define CRT_SIZE_USER(ptr)      (*(unsigned long *)((unsigned long)(ptr) - 2 * sizeof(unsigned long)))
-#define CRT_SIZE_ALLOC(ptr)     (*(unsigned long *)((unsigned long)(ptr) - 1 * sizeof(unsigned long)))
+#define CRT_PTR_USER(ptr)       ((unsigned long *)ptr + 2)
+#define CRT_SIZE_USER(ptr)      (*((unsigned long *)ptr - 2))
+#define CRT_SIZE_ALLOC(ptr)     (*((unsigned long *)ptr - 1))
 #define CRT_SIZE_HDR            (2 * sizeof(unsigned long))
 
 void z_free(void *ptr) {
@@ -32,7 +33,7 @@ void *z_realloc(void *ptr, size_t size){
     if (alloc_size % PAGE_SIZE)
         alloc_size = ((alloc_size / PAGE_SIZE) + 1) * PAGE_SIZE;
 
-    unsigned long mem = (unsigned long)z_mmap(
+    void *memory = z_mmap(
             NULL,
             alloc_size,
             PROT_READ | PROT_WRITE,
@@ -40,22 +41,22 @@ void *z_realloc(void *ptr, size_t size){
             -1,
             0);
 
-    if (mem < 0) {
+    if (memory == MAP_FAILED) {
         return NULL;
     }
 
-    mem += CRT_SIZE_HDR;
+    memory = CRT_PTR_USER(memory);
 
-    CRT_SIZE_USER(mem) = size;
-    CRT_SIZE_ALLOC(mem) = alloc_size;
+    CRT_SIZE_USER(memory) = size;
+    CRT_SIZE_ALLOC(memory) = alloc_size;
 
     if (ptr && CRT_SIZE_USER(ptr))
-        z_memcpy((void *)mem, ptr, CRT_SIZE_USER(ptr));
+        z_memcpy(memory, ptr, CRT_SIZE_USER(ptr));
 
     if (ptr)
         z_free(ptr);
 
-    return (void *)mem;
+    return memory;
 }
 
 void *z_malloc(size_t size) {

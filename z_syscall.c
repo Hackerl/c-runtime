@@ -6,7 +6,12 @@
 #include <fcntl.h>
 #endif
 
+#ifdef MULTIPLE_THREADS
+static __thread int errno;
+#else
 static int errno;
+#endif
+
 
 int *z_errno_location() {
     return &errno;
@@ -23,19 +28,24 @@ static long int check_error(long int rc) {
 
 #define SYSCALL(name, ...) check_error(do_syscall(SYS_##name, __VA_ARGS__))
 
-#define DEFINE_SYSCALL1(name, ret, t1, a1)                                  \
-ret z_##name(t1 a1) {                                                       \
-    return (ret)SYSCALL(name, a1);                                          \
+#define DEFINE_SYSCALL1(name, ret, t1, a1)                                          \
+ret z_##name(t1 a1) {                                                               \
+    return (ret)SYSCALL(name, a1);                                                  \
 }
 
-#define DEFINE_SYSCALL2(name, ret, t1, a1, t2, a2)                          \
-ret z_##name(t1 a1, t2 a2) {                                                \
-    return (ret)SYSCALL(name, a1, a2);                                      \
+#define DEFINE_SYSCALL2(name, ret, t1, a1, t2, a2)                                  \
+ret z_##name(t1 a1, t2 a2) {                                                        \
+    return (ret)SYSCALL(name, a1, a2);                                              \
 }
 
-#define DEFINE_SYSCALL3(name, ret, t1, a1, t2, a2, t3, a3)                  \
-ret z_##name(t1 a1, t2 a2, t3 a3) {                                         \
-    return (ret)SYSCALL(name, a1, a2, a3);                                  \
+#define DEFINE_SYSCALL3(name, ret, t1, a1, t2, a2, t3, a3)                          \
+ret z_##name(t1 a1, t2 a2, t3 a3) {                                                 \
+    return (ret)SYSCALL(name, a1, a2, a3);                                          \
+}
+
+#define DEFINE_SYSCALL6(name, ret, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5, t6, a6)  \
+ret z_##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) {                            \
+    return (ret)SYSCALL(name, a1, a2, a3, a4, a5, a6);                              \
 }
 
 DEFINE_SYSCALL1(exit, void, int, status)
@@ -47,6 +57,8 @@ DEFINE_SYSCALL3(write, ssize_t, int, fd, const void *, buf, size_t, count)
 
 DEFINE_SYSCALL2(munmap, int, void *, addr, size_t, length)
 DEFINE_SYSCALL3(mprotect, int, void *, addr, size_t, length, int, prot)
+
+DEFINE_SYSCALL6(futex, int, int *, uaddr, int, op, int, val, const struct timespec *, timeout, int *, uaddr2, int, val3)
 
 int z_open(const char *pathname, int flags, mode_t mode) {
 #ifdef __aarch64__

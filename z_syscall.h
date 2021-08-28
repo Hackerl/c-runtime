@@ -21,6 +21,8 @@ void *z_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offse
 int z_munmap(void *addr, size_t length);
 int z_mprotect(void *addr, size_t length, int prot);
 
+int z_futex(int *uaddr, int op, int val, const struct timespec *timeout, int *uaddr2, int val3);
+
 #if __i386__ || __arm__
 int z_stat64(const char *pathname, struct stat64 *buf);
 #elif __x86_64__ || __aarch64__
