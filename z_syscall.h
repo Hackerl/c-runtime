@@ -5,6 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define z_errno *z_errno_location()
 
 int *z_errno_location();
@@ -27,6 +31,10 @@ int z_futex(int *uaddr, int op, int val, const struct timespec *timeout, int *ua
 int z_stat64(const char *pathname, struct stat64 *buf);
 #elif __x86_64__ || __aarch64__
 int z_stat(const char *pathname, struct stat *buf);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif //C_RUNTIME_Z_SYSCALL_H

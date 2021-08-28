@@ -3,6 +3,10 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 size_t z_strlen(const char * str);
 int z_strncmp(const char * s1, const char * s2, size_t n);
 int z_strcmp(const char * s1, const char * s2);
@@ -17,5 +21,9 @@ int z_isalpha(int c);
 int z_isupper(int c);
 
 unsigned long int z_strtoul(const char *str, char **endptr, int base);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //C_RUNTIME_Z_STD_H
