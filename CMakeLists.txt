@@ -3,8 +3,11 @@ project(c_runtime C)
 
 set(CMAKE_C_STANDARD 99)
 
+include_directories(include)
+include_directories(printf)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-add_library(c_runtime STATIC z_std.c z_memory.c z_syscall.c z_log.c printf/printf.c z_sync.c)
-target_include_directories(c_runtime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(c_runtime STATIC src/z_std.c src/z_memory.c src/z_syscall.c src/z_log.c src/z_sync.c printf/printf.c)
+target_include_directories(c_runtime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/printf)
