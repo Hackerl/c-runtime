@@ -11,16 +11,20 @@ void z_mutex_lock(z_mutex_t *mutex) {
         if (__sync_bool_compare_and_swap(mutex, 0, 1))
             break;
 
-        if (z_futex(mutex, FUTEX_WAIT, 1, NULL, NULL, 0) < 0 && z_errno != EAGAIN) {
-            LOG("futex wait error: %d", z_errno);
+        Z_RESULT(futex) r = z_futex(mutex, FUTEX_WAIT, 1, NULL, NULL, 0);
+
+        if (r.v < 0 && r.e != EAGAIN) {
+            LOG("futex wait error: %d", r.e);
         }
     }
 }
 
 void z_mutex_unlock(z_mutex_t *mutex) {
     if (__sync_bool_compare_and_swap(mutex, 1, 0)) {
-        if (z_futex(mutex, FUTEX_WAKE, INT_MAX, NULL, NULL, 0) < 0) {
-            LOG("futex wake error: %d", z_errno);
+        Z_RESULT(futex) r = z_futex(mutex, FUTEX_WAKE, INT_MAX, NULL, NULL, 0);
+
+        if (r.v < 0) {
+            LOG("futex wake error: %d", r.e);
         }
     }
 }
@@ -33,12 +37,12 @@ void z_cond_wait(z_cond_t *cond, z_mutex_t *mutex, const struct timespec *timeou
         if (mutex)
             z_mutex_unlock(mutex);
 
-        int r = z_futex(mutex, FUTEX_WAIT, 0, NULL, NULL, 0);
+        Z_RESULT(futex) r = z_futex(mutex, FUTEX_WAIT, 0, NULL, NULL, 0);
 
         if (mutex)
             z_mutex_lock(mutex);
 
-        if (r < 0 && z_errno == ETIMEDOUT) {
+        if (r.v < 0 && r.e == ETIMEDOUT) {
             break;
         }
     }
@@ -46,16 +50,20 @@ void z_cond_wait(z_cond_t *cond, z_mutex_t *mutex, const struct timespec *timeou
 
 void z_cond_signal(z_cond_t *cond) {
     if (__sync_bool_compare_and_swap(cond, 0, 1)) {
-        if (z_futex(cond, FUTEX_WAKE, 1, NULL, NULL, 0) < 0) {
-            LOG("futex wake error: %d", z_errno);
+        Z_RESULT(futex) r = z_futex(cond, FUTEX_WAKE, 1, NULL, NULL, 0);
+
+        if (r.v < 0) {
+            LOG("futex wake error: %d", r.e);
         }
     }
 }
 
 void z_cond_broadcast(z_cond_t *cond) {
     if (__sync_bool_compare_and_swap(cond, 0, 1)) {
-        if (z_futex(cond, FUTEX_WAKE, INT_MAX, NULL, NULL, 0) < 0) {
-            LOG("futex wake error: %d", z_errno);
+        Z_RESULT(futex) r = z_futex(cond, FUTEX_WAKE, INT_MAX, NULL, NULL, 0);
+
+        if (r.v < 0) {
+            LOG("futex wake error: %d", r.e);
         }
     }
 }

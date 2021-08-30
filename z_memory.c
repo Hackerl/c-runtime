@@ -33,13 +33,13 @@ void *z_realloc(void *ptr, size_t size){
     if (alloc_size % PAGE_SIZE)
         alloc_size = ((alloc_size / PAGE_SIZE) + 1) * PAGE_SIZE;
 
-    void *memory = z_mmap(
+    void *memory = Z_RESULT_V(z_mmap(
             NULL,
             alloc_size,
             PROT_READ | PROT_WRITE,
             MAP_ANONYMOUS | MAP_PRIVATE,
             -1,
-            0);
+            0));
 
     if (memory == MAP_FAILED) {
         return NULL;
