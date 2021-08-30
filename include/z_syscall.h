@@ -13,10 +13,12 @@ extern "C" {
 #define Z_RESULT(name) struct z_result_##name
 
 #define Z_RESULT_DECLARE(name, t)           \
-struct z_result_##name {                    \
+Z_RESULT(name) {                            \
     t v;                                    \
     int e;                                  \
-}
+};                                          \
+                                            \
+Z_RESULT(name)                              \
 
 void z_exit(int status);
 
