@@ -163,7 +163,7 @@ DEFINE_SYSCALL2(stat, int, const char *, pathname, struct stat *, buf)
 #elif __aarch64__
 Z_RESULT(stat) z_stat(const char *pathname, struct stat *buf) {
     Z_RESULT(wrapper) r = SYSCALL(newfstatat, AT_FDCWD, pathname, buf, 0);
-    return (Z_RESULT(open)) {(ret)r.v, r.errno};
+    return (Z_RESULT(stat)) {(ret)r.v, r.errno};
 }
 #endif
 
