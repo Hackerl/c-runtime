@@ -150,7 +150,7 @@ void z_exit(int status) {
 #ifdef __aarch64__
 Z_RESULT(open) z_open(const char *pathname, int flags, mode_t mode) {
     Z_RESULT(wrapper) r = SYSCALL(openat, AT_FDCWD, pathname, flags, mode);
-    return (Z_RESULT(open)) {(ret)r.v, r.errno};
+    return (Z_RESULT(open)) {(int)r.v, r.e};
 }
 #else
 DEFINE_SYSCALL3(open, int, const char *, pathname, int, flags, mode_t, mode)
@@ -163,7 +163,7 @@ DEFINE_SYSCALL2(stat, int, const char *, pathname, struct stat *, buf)
 #elif __aarch64__
 Z_RESULT(stat) z_stat(const char *pathname, struct stat *buf) {
     Z_RESULT(wrapper) r = SYSCALL(newfstatat, AT_FDCWD, pathname, buf, 0);
-    return (Z_RESULT(stat)) {(ret)r.v, r.errno};
+    return (Z_RESULT(stat)) {(int)r.v, r.e};
 }
 #endif
 
@@ -171,7 +171,7 @@ Z_RESULT(stat) z_stat(const char *pathname, struct stat *buf) {
 Z_RESULT(mmap) z_mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
     offset = (unsigned long long)offset >> 12;
     Z_RESULT(wrapper) r = SYSCALL(mmap2, addr, length, prot, flags, fd, offset);
-    return (Z_RESULT(mmap)) {(ret)r.v, r.errno};
+    return (Z_RESULT(mmap)) {(void *)r.v, r.e};
 }
 #else
 DEFINE_SYSCALL6(mmap, void *, void *, addr, size_t, length, int, prot, int, flags, int, fd, off_t, offset)
