@@ -67,3 +67,31 @@ void z_cond_broadcast(z_cond_t *cond) {
         }
     }
 }
+
+void z_rwlock_read_lock(z_rwlock_t *rwlock) {
+    z_mutex_lock(&rwlock->r_mutex);
+
+    if (++rwlock->r_count == 1) {
+        z_mutex_lock(&rwlock->w_mutex);
+    }
+
+    z_mutex_unlock(&rwlock->r_mutex);
+}
+
+void z_rwlock_read_unlock(z_rwlock_t *rwlock) {
+    z_mutex_lock(&rwlock->r_mutex);
+
+    if (--rwlock->r_count == 0) {
+        z_mutex_unlock(&rwlock->w_mutex);
+    }
+
+    z_mutex_unlock(&rwlock->r_mutex);
+}
+
+void z_rwlock_write_lock(z_rwlock_t *rwlock) {
+    z_mutex_lock(&rwlock->w_mutex);
+}
+
+void z_rwlock_write_unlock(z_rwlock_t *rwlock) {
+    z_mutex_unlock(&rwlock->w_mutex);
+}
