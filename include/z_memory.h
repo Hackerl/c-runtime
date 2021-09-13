@@ -9,6 +9,7 @@ extern "C" {
 
 void *z_malloc(size_t size);
 void *z_realloc(void *ptr, size_t size);
+void *z_calloc(size_t num, size_t size);
 void z_free(void *ptr);
 
 #ifdef __cplusplus

@@ -7,9 +7,9 @@
 #define PAGE_SIZE 0x1000
 #endif
 
-#define CRT_PTR_USER(ptr)       ((unsigned long *)ptr + 2)
-#define CRT_SIZE_USER(ptr)      (*((unsigned long *)ptr - 2))
-#define CRT_SIZE_ALLOC(ptr)     (*((unsigned long *)ptr - 1))
+#define CRT_PTR_USER(ptr)       ((unsigned long *)(ptr) + 2)
+#define CRT_SIZE_USER(ptr)      (*((unsigned long *)(ptr) - 2))
+#define CRT_SIZE_ALLOC(ptr)     (*((unsigned long *)(ptr) - 1))
 #define CRT_SIZE_HDR            (2 * sizeof(unsigned long))
 
 void z_free(void *ptr) {
@@ -61,4 +61,13 @@ void *z_realloc(void *ptr, size_t size){
 
 void *z_malloc(size_t size) {
     return z_realloc(NULL, size);
+}
+
+void *z_calloc(size_t num, size_t size) {
+    void *ptr = z_malloc(num * size);
+
+    if (ptr)
+        z_memset(ptr, 0, num * size);
+
+    return ptr;
 }
