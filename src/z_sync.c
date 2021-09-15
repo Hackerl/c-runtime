@@ -1,6 +1,8 @@
 #include <z_sync.h>
 #include <z_log.h>
 #include <z_syscall.h>
+#include <z_memory.h>
+#include <z_std.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <limits.h>
@@ -94,4 +96,73 @@ void z_rwlock_write_lock(z_rwlock_t *rwlock) {
 
 void z_rwlock_write_unlock(z_rwlock_t *rwlock) {
     z_mutex_unlock(&rwlock->w_mutex);
+}
+
+void z_circular_buffer_init(z_circular_buffer_t *buffer, unsigned long size, unsigned long length) {
+    buffer->head = 0;
+    buffer->tail = 0;
+    buffer->size = size;
+    buffer->length = length;
+
+    buffer->buffer = z_calloc(length, size);
+    buffer->state = z_calloc(length, sizeof(z_circular_buffer_state_t));
+}
+
+void z_circular_buffer_destroy(z_circular_buffer_t *buffer) {
+    z_free(buffer->buffer);
+    z_free(buffer->state);
+}
+
+unsigned long z_circular_buffer_size(z_circular_buffer_t *buffer) {
+    return (__atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST) % buffer->length + buffer->length - __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST) % buffer->length) % buffer->length;
+}
+
+bool z_circular_buffer_full(z_circular_buffer_t *buffer) {
+    return (__atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST) + 1) % buffer->length == __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST) % buffer->length;
+}
+
+bool z_circular_buffer_empty(z_circular_buffer_t *buffer) {
+    return __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST) == __atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST);
+}
+
+bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *item) {
+    unsigned long index = __atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST);
+
+    do {
+        if (z_circular_buffer_full(buffer))
+            return false;
+    } while (!__atomic_compare_exchange_n(&buffer->tail, &index, (index + 1) % (ULONG_MAX - (ULONG_MAX % buffer->length)), true, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+
+    index %= buffer->length;
+
+    while (!__sync_bool_compare_and_swap(&buffer->state[index], IDLE, PUTTING)) {
+
+    }
+
+    z_memcpy((char *)buffer->buffer + index * buffer->size, item, buffer->size);
+
+    __atomic_store_n(&buffer->state[index], VALID, __ATOMIC_SEQ_CST);
+
+    return true;
+}
+
+bool z_circular_buffer_dequeue(z_circular_buffer_t *buffer, void *item) {
+    unsigned long index = __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST);;
+
+    do {
+        if (z_circular_buffer_empty(buffer))
+            return false;
+    } while (!__atomic_compare_exchange_n(&buffer->head, &index, (index + 1) % (ULONG_MAX - (ULONG_MAX % buffer->length)), true, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+
+    index %= buffer->length;
+
+    while (!__sync_bool_compare_and_swap(&buffer->state[index], VALID, TAKING)) {
+
+    }
+
+    z_memcpy(item, (char *)buffer->buffer + index * buffer->size, buffer->size);
+
+    __atomic_store_n(&buffer->state[index], IDLE, __ATOMIC_SEQ_CST);
+
+    return true;
 }
