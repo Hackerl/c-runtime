@@ -39,7 +39,7 @@ void z_cond_wait(z_cond_t *cond, z_mutex_t *mutex, const struct timespec *timeou
         if (mutex)
             z_mutex_unlock(mutex);
 
-        Z_RESULT(futex) r = z_futex(mutex, FUTEX_WAIT, 0, NULL, NULL, 0);
+        Z_RESULT(futex) r = z_futex(cond, FUTEX_WAIT, 0, timeout, NULL, 0);
 
         if (mutex)
             z_mutex_lock(mutex);
