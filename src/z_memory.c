@@ -18,25 +18,36 @@
 #define HEAP_CACHE_LOWER        0x1000
 #define HEAP_CACHE_UPPER        0x10000
 #define HEAP_CACHE_RETRY        5
+#define HEAP_CACHE_EXPIRED      5
 
-static void *cache_buffer[HEAP_CACHE_COUNT] = {};
-static z_circular_buffer_state_t cache_state[HEAP_CACHE_COUNT] = {};
+typedef struct {
+    int miss;
+    void *ptr;
+} cache_record_t;
+
+static cache_record_t cache_records[HEAP_CACHE_COUNT] = {};
+static z_circular_buffer_state_t cache_states[HEAP_CACHE_COUNT] = {};
 
 static z_circular_buffer_t cache = {
         0,
         0,
-        sizeof(void *),
+        sizeof(cache_record_t),
         HEAP_CACHE_COUNT,
-        cache_buffer,
-        cache_state
+        cache_records,
+        cache_states
 };
 
 void z_free(void *ptr) {
     if (!ptr)
         return;
 
-    if (CRT_SIZE_ALLOC(ptr) >= HEAP_CACHE_LOWER && CRT_SIZE_ALLOC(ptr) <= HEAP_CACHE_UPPER && z_circular_buffer_enqueue(&cache, &ptr))
-        return;
+    if (CRT_SIZE_ALLOC(ptr) >= HEAP_CACHE_LOWER && CRT_SIZE_ALLOC(ptr) <= HEAP_CACHE_UPPER) {
+        cache_record_t record = {0, ptr};
+
+        if (z_circular_buffer_enqueue(&cache, &record)) {
+            return;
+        }
+    }
 
     z_munmap(CRT_PTR_RAW(ptr), CRT_SIZE_ALLOC(ptr));
 }
@@ -62,23 +73,25 @@ void *z_malloc(size_t size) {
     size_t length = (size + CRT_SIZE_HDR + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
     if (length <= HEAP_CACHE_UPPER) {
-        for (int i = 0; i < HEAP_CACHE_RETRY; i++, ptr = NULL) {
-            if (!z_circular_buffer_dequeue(&cache, &ptr))
+        cache_record_t record = {};
+
+        for (int i = 0; i < HEAP_CACHE_RETRY; i++) {
+            if (!z_circular_buffer_dequeue(&cache, &record))
                 break;
 
-            if (CRT_SIZE_ALLOC(ptr) >= length) {
-                CRT_SIZE_USER(ptr) = size;
+            if (CRT_SIZE_ALLOC(record.ptr) >= length) {
+                ptr = record.ptr;
                 break;
             }
 
-            if (!z_circular_buffer_enqueue(&cache, &ptr)) {
-                z_free(ptr);
+            if (record.miss++ > HEAP_CACHE_EXPIRED || !z_circular_buffer_enqueue(&cache, &record)) {
+                z_munmap(CRT_PTR_RAW(record.ptr), CRT_SIZE_ALLOC(record.ptr));
             }
         }
     }
 
     if (!ptr) {
-        void *memory = Z_RESULT_V(z_mmap(
+        void *p = Z_RESULT_V(z_mmap(
                 NULL,
                 length,
                 PROT_READ | PROT_WRITE,
@@ -86,15 +99,15 @@ void *z_malloc(size_t size) {
                 -1,
                 0));
 
-        if (memory == MAP_FAILED) {
+        if (p == MAP_FAILED) {
             return NULL;
         }
 
-        ptr = CRT_PTR_USER(memory);
-
-        CRT_SIZE_USER(ptr) = size;
+        ptr = CRT_PTR_USER(p);
         CRT_SIZE_ALLOC(ptr) = length;
     }
+
+    CRT_SIZE_USER(ptr) = size;
 
     return ptr;
 }
