@@ -42,18 +42,17 @@ void z_free(void *ptr) {
 }
 
 void *z_realloc(void *ptr, size_t size){
-    if (ptr && size < CRT_SIZE_ALLOC(ptr) - CRT_SIZE_HDR) {
+    if (ptr && size <= CRT_SIZE_ALLOC(ptr) - CRT_SIZE_HDR) {
         CRT_SIZE_USER(ptr) = size;
         return ptr;
     }
 
     void *p = z_malloc(size);
 
-    if (ptr && CRT_SIZE_USER(ptr))
+    if (ptr) {
         z_memcpy(p, ptr, CRT_SIZE_USER(ptr) < size ? CRT_SIZE_USER(ptr) : size);
-
-    if (ptr)
         z_free(ptr);
+    }
 
     return p;
 }
