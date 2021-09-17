@@ -69,7 +69,6 @@ void *z_realloc(void *ptr, size_t size){
 }
 
 void *z_malloc(size_t size) {
-    void *ptr = NULL;
     size_t length = (size + CRT_SIZE_HDR + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
     if (length <= HEAP_CACHE_UPPER) {
@@ -80,8 +79,8 @@ void *z_malloc(size_t size) {
                 break;
 
             if (CRT_SIZE_ALLOC(record.ptr) >= length) {
-                ptr = record.ptr;
-                break;
+                CRT_SIZE_USER(record.ptr) = size;
+                return record.ptr;
             }
 
             if (record.miss++ > HEAP_CACHE_EXPIRED || !z_circular_buffer_enqueue(&cache, &record)) {
@@ -90,23 +89,21 @@ void *z_malloc(size_t size) {
         }
     }
 
-    if (!ptr) {
-        void *p = Z_RESULT_V(z_mmap(
-                NULL,
-                length,
-                PROT_READ | PROT_WRITE,
-                MAP_ANONYMOUS | MAP_PRIVATE,
-                -1,
-                0));
+    void *ptr = Z_RESULT_V(z_mmap(
+            NULL,
+            length,
+            PROT_READ | PROT_WRITE,
+            MAP_ANONYMOUS | MAP_PRIVATE,
+            -1,
+            0));
 
-        if (p == MAP_FAILED) {
-            return NULL;
-        }
-
-        ptr = CRT_PTR_USER(p);
-        CRT_SIZE_ALLOC(ptr) = length;
+    if (ptr == MAP_FAILED) {
+        return NULL;
     }
 
+    ptr = CRT_PTR_USER(ptr);
+
+    CRT_SIZE_ALLOC(ptr) = length;
     CRT_SIZE_USER(ptr) = size;
 
     return ptr;
