@@ -14,6 +14,8 @@
 #define CRT_SIZE_ALLOC(ptr)     (*((unsigned long *)(ptr) - 1))
 #define CRT_SIZE_HDR            (2 * sizeof(unsigned long))
 
+#ifndef DISABLE_CACHE
+
 #define HEAP_CACHE_COUNT        100
 #define HEAP_CACHE_LOWER        0x1000
 #define HEAP_CACHE_UPPER        0x10000
@@ -37,10 +39,13 @@ static z_circular_buffer_t cache = {
         cache_states
 };
 
+#endif
+
 void z_free(void *ptr) {
     if (!ptr)
         return;
 
+#ifndef DISABLE_CACHE
     if (CRT_SIZE_ALLOC(ptr) >= HEAP_CACHE_LOWER && CRT_SIZE_ALLOC(ptr) <= HEAP_CACHE_UPPER) {
         cache_record_t record = {0, ptr};
 
@@ -48,6 +53,7 @@ void z_free(void *ptr) {
             return;
         }
     }
+#endif
 
     z_munmap(CRT_PTR_RAW(ptr), CRT_SIZE_ALLOC(ptr));
 }
@@ -71,6 +77,7 @@ void *z_realloc(void *ptr, size_t size){
 void *z_malloc(size_t size) {
     size_t length = (size + CRT_SIZE_HDR + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
+#ifndef DISABLE_CACHE
     if (length <= HEAP_CACHE_UPPER) {
         cache_record_t record = {};
 
@@ -88,6 +95,7 @@ void *z_malloc(size_t size) {
             }
         }
     }
+#endif
 
     void *ptr = Z_RESULT_V(z_mmap(
             NULL,
