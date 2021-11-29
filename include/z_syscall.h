@@ -21,6 +21,7 @@ Z_RESULT(name) {                            \
 Z_RESULT(name)                              \
 
 void z_exit(int status);
+void z_exit_group(int status);
 
 Z_RESULT_DECLARE(open, int) z_open(const char *pathname, int flags, mode_t mode);
 Z_RESULT_DECLARE(openat, int) z_openat(int dirfd, const char *pathname, int flags, mode_t mode);

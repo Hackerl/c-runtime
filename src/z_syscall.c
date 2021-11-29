@@ -10,78 +10,78 @@ long int do_syscall(long int sys_no, ...);
 #ifdef __i386__
 
 __asm__ (
-".section .text\n"
-".type do_syscall, @function\n"
-"do_syscall:\n"
-"    push %ebp\n"
-"    push %edi\n"
-"    push %esi\n"
-"    push %ebx\n"
-"    mov 44(%esp), %ebp\n"
-"    mov 40(%esp), %edi\n"
-"    mov 36(%esp), %esi\n"
-"    mov 32(%esp), %edx\n"
-"    mov 28(%esp), %ecx\n"
-"    mov 24(%esp), %ebx\n"
-"    mov 20(%esp), %eax\n"
-"    int $0x80\n"
-"    pop %ebx\n"
-"    pop %esi\n"
-"    pop %edi\n"
-"    pop %ebp\n"
+".section .text;"
+".type do_syscall, @function;"
+"do_syscall:"
+"    push %ebp;"
+"    push %edi;"
+"    push %esi;"
+"    push %ebx;"
+"    mov 44(%esp), %ebp;"
+"    mov 40(%esp), %edi;"
+"    mov 36(%esp), %esi;"
+"    mov 32(%esp), %edx;"
+"    mov 28(%esp), %ecx;"
+"    mov 24(%esp), %ebx;"
+"    mov 20(%esp), %eax;"
+"    int $0x80;"
+"    pop %ebx;"
+"    pop %esi;"
+"    pop %edi;"
+"    pop %ebp;"
 "    ret"
 );
 
 #elif __x86_64__
 
 __asm__ (
-".section .text\n"
-".type do_syscall, @function\n"
-"do_syscall:\n"
-"    mov %rdi, %rax\n"
-"    mov %rsi, %rdi\n"
-"    mov %rdx, %rsi\n"
-"    mov %rcx, %rdx\n"
-"    mov %r8, %r10\n"
-"    mov %r9, %r8\n"
-"    mov 8(%rsp), %r9\n"
-"    syscall\n"
+".section .text;"
+".type do_syscall, @function;"
+"do_syscall:"
+"    mov %rdi, %rax;"
+"    mov %rsi, %rdi;"
+"    mov %rdx, %rsi;"
+"    mov %rcx, %rdx;"
+"    mov %r8, %r10;"
+"    mov %r9, %r8;"
+"    mov 8(%rsp), %r9;"
+"    syscall;"
 "    ret"
 );
 
 #elif __arm__
 
 __asm__ (
-".section .text\n"
-".type do_syscall, %function\n"
-"do_syscall:\n"
-"    mov ip, sp\n"
-"    push {r4, r5, r6, r7}\n"
-"    mov r7, r0\n"
-"    mov r0, r1\n"
-"    mov r1, r2\n"
-"    mov r2, r3\n"
-"    ldmfd ip, {r3, r4, r5, r6}\n"
-"    swi 0x0\n"
-"    pop {r4, r5, r6, r7}\n"
+".section .text;"
+".type do_syscall, %function;"
+"do_syscall:"
+"    mov ip, sp;"
+"    push {r4, r5, r6, r7};"
+"    mov r7, r0;"
+"    mov r0, r1;"
+"    mov r1, r2;"
+"    mov r2, r3;"
+"    ldmfd ip, {r3, r4, r5, r6};"
+"    swi 0x0;"
+"    pop {r4, r5, r6, r7};"
 "    bx lr"
 );
 
 #elif __aarch64__
 
 __asm__ (
-".section .text\n"
-".type do_syscall, %function\n"
-"do_syscall:\n"
-"    uxtw x8, w0\n"
-"    mov x0, x1\n"
-"    mov x1, x2\n"
-"    mov x2, x3\n"
-"    mov x3, x4\n"
-"    mov x4, x5\n"
-"    mov x5, x6\n"
-"    mov x6, x7\n"
-"    svc 0x0\n"
+".section .text;"
+".type do_syscall, %function;"
+"do_syscall:"
+"    uxtw x8, w0;"
+"    mov x0, x1;"
+"    mov x1, x2;"
+"    mov x2, x3;"
+"    mov x3, x4;"
+"    mov x4, x5;"
+"    mov x5, x6;"
+"    mov x6, x7;"
+"    svc 0x0;"
 "    ret"
 );
 
@@ -145,6 +145,10 @@ DEFINE_SYSCALL6(futex, int, int *, uaddr, int, op, int, val, const struct timesp
 
 void z_exit(int status) {
     SYSCALL(exit, status);
+}
+
+void z_exit_group(int status) {
+    SYSCALL(exit_group, status);
 }
 
 #ifdef __aarch64__
