@@ -58,6 +58,15 @@ void *z_memset(void *s, unsigned char c, size_t n) {
     return s;
 }
 
+void *z_memmem(void *haystack, size_t n, void *needle, size_t m) {
+    for (int i = 0; i < n - m; i++) {
+        if (!z_memcmp((char *)haystack + i, needle, m))
+            return (char *)haystack + i;
+    }
+
+    return NULL;
+}
+
 int z_isspace(int c) {
     return c == ' ' || (unsigned)c - '\t' < 5;
 }
@@ -70,13 +79,12 @@ int z_isalpha(int c) {
     return ((unsigned)c | 32U) - 'a' < 26;
 }
 
-int z_isupper(int c)
-{
+int z_isupper(int c) {
     return (unsigned)c - 'A' < 26;
 }
 
-unsigned long int z_strtoul(const char *str, char **endptr, int base) {
-    const unsigned char* s = (const unsigned char *)str;
+long int z_strtol(const char *str, char **endptr, int base) {
+    const unsigned char *s = (const unsigned char *) str;
     unsigned long acc;
     int c;
     unsigned long cutoff;
@@ -84,9 +92,17 @@ unsigned long int z_strtoul(const char *str, char **endptr, int base) {
     int any;
     int cutlim;
 
+    if (base < 0 || base > 36) {
+        if (endptr) {
+            *endptr = (char *) str;
+        }
+
+        return 0;
+    }
+
     do {
         c = *s++;
-    } while(z_isspace(c));
+    } while (z_isspace(c));
 
     if (c == '-') {
         neg = 1;
@@ -109,8 +125,9 @@ unsigned long int z_strtoul(const char *str, char **endptr, int base) {
         base = c == '0' ? 8 : 10;
     }
 
-    cutoff = (unsigned long)ULONG_MAX / (unsigned long)base;
-    cutlim = (int)((unsigned long)ULONG_MAX % (unsigned long)base);
+    cutoff = neg ? -(unsigned long) LONG_MIN : LONG_MAX;
+    cutlim = (int) (cutoff % (unsigned long) base);
+    cutoff /= (unsigned long) base;
 
     for (acc = 0, any = 0;; c = *s++) {
         if (z_isdigit(c)) {
@@ -129,8 +146,80 @@ unsigned long int z_strtoul(const char *str, char **endptr, int base) {
             any = -1;
         } else {
             any = 1;
-            acc *= (unsigned long)base;
-            acc += (unsigned long)c;
+            acc *= (unsigned long) base;
+            acc += (unsigned long) c;
+        }
+    }
+
+    if (any < 0) {
+        acc = neg ? (unsigned long) LONG_MIN : (unsigned long) LONG_MAX;
+    } else if (neg) {
+        acc = -acc;
+    }
+
+    if (endptr != 0) {
+        *endptr = (char *) (any ? (const char *) s - 1 : str);
+    }
+
+    return (long) (acc);
+}
+
+unsigned long int z_strtoul(const char *str, char **endptr, int base) {
+    const unsigned char *s = (const unsigned char *) str;
+    unsigned long acc;
+    int c;
+    unsigned long cutoff;
+    int neg = 0;
+    int any;
+    int cutlim;
+
+    do {
+        c = *s++;
+    } while (z_isspace(c));
+
+    if (c == '-') {
+        neg = 1;
+        c = *s++;
+    } else if (c == '+') {
+        c = *s++;
+    }
+
+    if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X')) {
+        c = s[1];
+        s += 2;
+        base = 16;
+    } else if ((base == 0 || base == 2) && c == '0' && (*s == 'b' || *s == 'B')) {
+        c = s[1];
+        s += 2;
+        base = 2;
+    }
+
+    if (base == 0) {
+        base = c == '0' ? 8 : 10;
+    }
+
+    cutoff = (unsigned long) ULONG_MAX / (unsigned long) base;
+    cutlim = (int) ((unsigned long) ULONG_MAX % (unsigned long) base);
+
+    for (acc = 0, any = 0;; c = *s++) {
+        if (z_isdigit(c)) {
+            c -= '0';
+        } else if (z_isalpha(c)) {
+            c -= z_isupper(c) ? 'A' - 10 : 'a' - 10;
+        } else {
+            break;
+        }
+
+        if (c >= base) {
+            break;
+        }
+
+        if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim)) {
+            any = -1;
+        } else {
+            any = 1;
+            acc *= (unsigned long) base;
+            acc += (unsigned long) c;
         }
     }
 
@@ -141,7 +230,7 @@ unsigned long int z_strtoul(const char *str, char **endptr, int base) {
     }
 
     if (endptr != NULL) {
-        *endptr = (char *)(any ? (const char *)s - 1 : str);
+        *endptr = (char *) (any ? (const char *) s - 1 : str);
     }
 
     return acc;
