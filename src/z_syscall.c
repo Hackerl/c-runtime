@@ -132,6 +132,8 @@ Z_RESULT(name) z_##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) {             
     return (Z_RESULT(name)) {(ret)r.v, r.e};                                        \
 }
 
+DEFINE_SYSCALL2(kill, int, pid_t, pid, int, sig)
+
 DEFINE_SYSCALL1(close, int, int, fd)
 DEFINE_SYSCALL4(openat, int, int, dirfd, const char *, pathname, int, flags, mode_t, mode)
 DEFINE_SYSCALL3(lseek, int, int, fd, off_t, offset, int, whence)
