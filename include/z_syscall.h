@@ -20,6 +20,8 @@ Z_RESULT(name) {                            \
                                             \
 Z_RESULT(name)                              \
 
+long int z_syscall(long int sys_no, ...);
+
 void z_exit(int status);
 void z_exit_group(int status);
 

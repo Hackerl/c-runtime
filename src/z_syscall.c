@@ -5,14 +5,13 @@
 #include <fcntl.h>
 #endif
 
-long int do_syscall(long int sys_no, ...);
-
 #ifdef __i386__
 
 __asm__ (
 ".section .text;"
-".type do_syscall, @function;"
-"do_syscall:"
+".global z_syscall;"
+".type z_syscall, @function;"
+"z_syscall:"
 "    push %ebp;"
 "    push %edi;"
 "    push %esi;"
@@ -36,8 +35,9 @@ __asm__ (
 
 __asm__ (
 ".section .text;"
-".type do_syscall, @function;"
-"do_syscall:"
+".global z_syscall;"
+".type z_syscall, @function;"
+"z_syscall:"
 "    mov %rdi, %rax;"
 "    mov %rsi, %rdi;"
 "    mov %rdx, %rsi;"
@@ -53,8 +53,9 @@ __asm__ (
 
 __asm__ (
 ".section .text;"
-".type do_syscall, %function;"
-"do_syscall:"
+".global z_syscall;"
+".type z_syscall, %function;"
+"z_syscall:"
 "    mov ip, sp;"
 "    push {r4, r5, r6, r7};"
 "    mov r7, r0;"
@@ -71,8 +72,9 @@ __asm__ (
 
 __asm__ (
 ".section .text;"
-".type do_syscall, %function;"
-"do_syscall:"
+".global z_syscall;"
+".type z_syscall, %function;"
+"z_syscall:"
 "    uxtw x8, w0;"
 "    mov x0, x1;"
 "    mov x1, x2;"
@@ -100,7 +102,7 @@ Z_RESULT_DECLARE(wrapper, long int) check_error(long int rc) {
     return r;
 }
 
-#define SYSCALL(name, ...) check_error(do_syscall(SYS_##name, __VA_ARGS__))
+#define SYSCALL(name, ...) check_error(z_syscall(SYS_##name, __VA_ARGS__))
 
 #define DEFINE_SYSCALL1(name, ret, t1, a1)                                          \
 Z_RESULT(name) z_##name(t1 a1) {                                                    \
