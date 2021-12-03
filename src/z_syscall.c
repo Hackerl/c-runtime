@@ -10,6 +10,7 @@
 __asm__ (
 ".section .text;"
 ".global z_syscall;"
+".internal z_syscall;"
 ".type z_syscall, @function;"
 "z_syscall:"
 "    push %ebp;"
@@ -36,6 +37,7 @@ __asm__ (
 __asm__ (
 ".section .text;"
 ".global z_syscall;"
+".internal z_syscall;"
 ".type z_syscall, @function;"
 "z_syscall:"
 "    mov %rdi, %rax;"
@@ -54,6 +56,7 @@ __asm__ (
 __asm__ (
 ".section .text;"
 ".global z_syscall;"
+".internal z_syscall;"
 ".type z_syscall, %function;"
 "z_syscall:"
 "    mov ip, sp;"
@@ -73,6 +76,7 @@ __asm__ (
 __asm__ (
 ".section .text;"
 ".global z_syscall;"
+".internal z_syscall;"
 ".type z_syscall, %function;"
 "z_syscall:"
 "    uxtw x8, w0;"
@@ -91,7 +95,7 @@ __asm__ (
 #error "unknown arch"
 #endif
 
-Z_RESULT_DECLARE(wrapper, long int) check_error(long int rc) {
+Z_RESULT_DECLARE(wrapper, long int) z_check_error(long int rc) {
     Z_RESULT(wrapper) r = {rc, 0};
 
     if (rc < 0 && rc > -4096) {
@@ -102,7 +106,7 @@ Z_RESULT_DECLARE(wrapper, long int) check_error(long int rc) {
     return r;
 }
 
-#define SYSCALL(name, ...) check_error(z_syscall(SYS_##name, __VA_ARGS__))
+#define SYSCALL(name, ...) z_check_error(z_syscall(SYS_##name, __VA_ARGS__))
 
 #define DEFINE_SYSCALL1(name, ret, t1, a1)                                          \
 Z_RESULT(name) z_##name(t1 a1) {                                                    \
