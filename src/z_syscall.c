@@ -139,7 +139,6 @@ Z_RESULT(name) z_##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) {             
 }
 
 DEFINE_SYSCALL2(kill, int, pid_t, pid, int, sig)
-DEFINE_SYSCALL2(arch_prctl, int, int, code, unsigned long, address);
 
 DEFINE_SYSCALL1(close, int, int, fd)
 DEFINE_SYSCALL4(openat, int, int, dirfd, const char *, pathname, int, flags, mode_t, mode)
@@ -159,6 +158,10 @@ void z_exit(int status) {
 void z_exit_group(int status) {
     SYSCALL(exit_group, status);
 }
+
+#if __i386__ || __x86_64__
+DEFINE_SYSCALL2(arch_prctl, int, int, code, unsigned long, address);
+#endif
 
 #ifdef __aarch64__
 Z_RESULT(open) z_open(const char *pathname, int flags, mode_t mode) {
