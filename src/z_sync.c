@@ -147,7 +147,7 @@ bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *item) {
 }
 
 bool z_circular_buffer_dequeue(z_circular_buffer_t *buffer, void *item) {
-    unsigned long index = __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST);;
+    unsigned long index = __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST);
 
     do {
         if (z_circular_buffer_empty(buffer))
