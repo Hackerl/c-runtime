@@ -3,9 +3,6 @@ project(c_runtime C)
 
 set(CMAKE_C_STANDARD 99)
 
-include_directories(include)
-include_directories(printf)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
