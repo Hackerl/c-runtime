@@ -98,7 +98,7 @@ void z_rwlock_write_unlock(z_rwlock_t *rwlock) {
     z_mutex_unlock(&rwlock->w_mutex);
 }
 
-void z_circular_buffer_init(z_circular_buffer_t *buffer, unsigned long size, unsigned long length) {
+void z_circular_buffer_init(z_circular_buffer_t *buffer, size_t size, size_t length) {
     buffer->head = 0;
     buffer->tail = 0;
     buffer->size = size;
@@ -113,7 +113,7 @@ void z_circular_buffer_destroy(z_circular_buffer_t *buffer) {
     z_free(buffer->state);
 }
 
-unsigned long z_circular_buffer_size(z_circular_buffer_t *buffer) {
+size_t z_circular_buffer_size(z_circular_buffer_t *buffer) {
     return (__atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST) % buffer->length + buffer->length - __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST) % buffer->length) % buffer->length;
 }
 
@@ -126,7 +126,7 @@ bool z_circular_buffer_empty(z_circular_buffer_t *buffer) {
 }
 
 bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *item) {
-    unsigned long index = __atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST);
+    size_t index = __atomic_load_n(&buffer->tail, __ATOMIC_SEQ_CST);
 
     do {
         if (z_circular_buffer_full(buffer))
@@ -147,7 +147,7 @@ bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *item) {
 }
 
 bool z_circular_buffer_dequeue(z_circular_buffer_t *buffer, void *item) {
-    unsigned long index = __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST);
+    size_t index = __atomic_load_n(&buffer->head, __ATOMIC_SEQ_CST);
 
     do {
         if (z_circular_buffer_empty(buffer))

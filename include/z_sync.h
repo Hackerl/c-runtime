@@ -25,10 +25,10 @@ typedef enum {
 } z_circular_buffer_state_t;
 
 typedef struct {
-    unsigned long head;
-    unsigned long tail;
-    unsigned long size;
-    unsigned long length;
+    size_t head;
+    size_t tail;
+    size_t size;
+    size_t length;
     void *buffer;
     z_circular_buffer_state_t *state;
 } z_circular_buffer_t;
@@ -45,10 +45,10 @@ void z_rwlock_read_unlock(z_rwlock_t *rwlock);
 void z_rwlock_write_lock(z_rwlock_t *rwlock);
 void z_rwlock_write_unlock(z_rwlock_t *rwlock);
 
-void z_circular_buffer_init(z_circular_buffer_t *buffer, unsigned long size, unsigned long length);
+void z_circular_buffer_init(z_circular_buffer_t *buffer, size_t size, size_t length);
 void z_circular_buffer_destroy(z_circular_buffer_t *buffer);
 
-unsigned long z_circular_buffer_size(z_circular_buffer_t *buffer);
+size_t z_circular_buffer_size(z_circular_buffer_t *buffer);
 
 bool z_circular_buffer_full(z_circular_buffer_t *buffer);
 bool z_circular_buffer_empty(z_circular_buffer_t *buffer);

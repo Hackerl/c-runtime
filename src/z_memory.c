@@ -1,18 +1,22 @@
 #include <z_memory.h>
 #include <z_syscall.h>
 #include <z_std.h>
-#include <z_sync.h>
 #include <sys/mman.h>
+#include <stdint.h>
+
+#ifndef DISABLE_CACHE
+#include <z_sync.h>
+#endif
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 0x1000
 #endif
 
-#define CRT_PTR_RAW(ptr)        ((unsigned long *)(ptr) - 2)
-#define CRT_PTR_USER(ptr)       ((unsigned long *)(ptr) + 2)
-#define CRT_SIZE_USER(ptr)      (*((unsigned long *)(ptr) - 2))
-#define CRT_SIZE_ALLOC(ptr)     (*((unsigned long *)(ptr) - 1))
-#define CRT_SIZE_HDR            (2 * sizeof(unsigned long))
+#define CRT_SIZE_HDR            (2 * sizeof(size_t))
+#define CRT_PTR_RAW(ptr)        ((void *)((uintptr_t)ptr - CRT_SIZE_HDR))
+#define CRT_PTR_USER(ptr)       ((void *)((uintptr_t)ptr + CRT_SIZE_HDR))
+#define CRT_SIZE_USER(ptr)      (*((size_t *)ptr - 2))
+#define CRT_SIZE_ALLOC(ptr)     (*((size_t *)ptr - 1))
 
 #ifndef DISABLE_CACHE
 
