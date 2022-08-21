@@ -52,8 +52,8 @@ size_t z_circular_buffer_size(z_circular_buffer_t *buffer);
 
 bool z_circular_buffer_full(z_circular_buffer_t *buffer);
 bool z_circular_buffer_empty(z_circular_buffer_t *buffer);
-bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *item);
-bool z_circular_buffer_dequeue(z_circular_buffer_t *buffer, void *item);
+bool z_circular_buffer_enqueue(z_circular_buffer_t *buffer, const void *element);
+bool z_circular_buffer_dequeue(z_circular_buffer_t *buffer, void *element);
 
 #ifdef __cplusplus
 }
