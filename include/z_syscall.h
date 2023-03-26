@@ -30,7 +30,7 @@ Z_RESULT_DECLARE(kill, int) z_kill(pid_t pid, int sig);
 Z_RESULT_DECLARE(open, int) z_open(const char *pathname, int flags, mode_t mode);
 Z_RESULT_DECLARE(openat, int) z_openat(int dirfd, const char *pathname, int flags, mode_t mode);
 Z_RESULT_DECLARE(close, int) z_close(int fd);
-Z_RESULT_DECLARE(lseek, int) z_lseek(int fd, off_t offset, int whence);
+Z_RESULT_DECLARE(lseek, off_t) z_lseek(int fd, off_t offset, int whence);
 Z_RESULT_DECLARE(read, ssize_t) z_read(int fd, void *buf, size_t count);
 Z_RESULT_DECLARE(write, ssize_t) z_write(int fd, const void *buf, size_t count);
 

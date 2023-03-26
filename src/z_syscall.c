@@ -142,7 +142,7 @@ DEFINE_SYSCALL2(kill, int, pid_t, pid, int, sig)
 
 DEFINE_SYSCALL1(close, int, int, fd)
 DEFINE_SYSCALL4(openat, int, int, dirfd, const char *, pathname, int, flags, mode_t, mode)
-DEFINE_SYSCALL3(lseek, int, int, fd, off_t, offset, int, whence)
+DEFINE_SYSCALL3(lseek, off_t, int, fd, off_t, offset, int, whence)
 DEFINE_SYSCALL3(read, ssize_t, int, fd, void *, buf, size_t, count)
 DEFINE_SYSCALL3(write, ssize_t, int, fd, const void *, buf, size_t, count)
 
